@@ -120,6 +120,16 @@ Cable.prototype._decode = function(buf) {
 		case 'utf-8':
 		case 'utf8':
 		return buf.toString();
+        case 'mixed':
+        var offset = 0;
+        var _headerLength = buf.readUInt32LE(offset);
+        offset += 4;
+        var _bodyLength = buf.readUInt32LE(offset);
+        offset += 4;
+        var _header = JSON.parse(buf.toString('utf8', offset, offset + _headerLength));
+        offset += _headerLength;
+        var _body = buf.slice(offset, offset + _bodyLength);
+        return { header: _header, body: _body };
 		default:
 		return buf;
 		break;
@@ -151,6 +161,14 @@ Cable.prototype._encode = function(type, id, message) {
 		buf = message;
 	} else if (this._encoding === 'json') {
 		buf = new Buffer(JSON.stringify(message === undefined ? null : message));
+    } else if (this._encoding === 'mixed') {
+        var _header = new Buffer(JSON.stringify(message.header || {}));
+        var _body = message.body || empty;
+        buf = new Buffer(4 + 4 + _header.length + _body.length);
+        buf.writeUInt32LE(_header.length, 0);
+        buf.writeUInt32LE(_body.length, 4);
+        _header.copy(buf, 8, 0, _header.length);
+        _body.copy(buf, 8 + _header.length, 0, _body.length);
 	} else if (!message) {
 		buf = empty;
 	} else {

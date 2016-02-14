@@ -38,6 +38,26 @@ test('json', function(t) {
 	});
 });
 
+test('mixed', function(t) {
+	t.plan(5);
+
+	var c = cable({encoding:'mixed'});
+
+	c.on('message', function(message, cb) {
+		t.ok(typeof message === 'object');
+		t.same(message.header.command, 1);
+		t.ok(Buffer.isBuffer(message.body));
+		cb(null, message);
+	});
+
+	c.pipe(c);
+
+	c.send({header: { command: 1 }, body: new Buffer('hello world') }, function(err, message) {
+		t.same(message.header.command, 1);
+		t.ok(Buffer.isBuffer(message.body));
+	});
+});
+
 test('json+error', function(t) {
 	t.plan(2);
 
