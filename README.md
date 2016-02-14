@@ -66,7 +66,7 @@ When you do a request `c.send(message, [cb])` cable sends the message and rememb
 
 ## Full API
 
-* `cable({encoding:null|json|utf-8}) -> c` instantiate a new cable duplex stream. select an optional message encoding
+* `cable({encoding:null|json|utf-8|mixed}) -> c` instantiate a new cable duplex stream. select an optional message encoding
 
 * `c.send(message, [cb])` send a message. add the callback if you want a response
 
@@ -75,6 +75,10 @@ When you do a request `c.send(message, [cb])` cable sends the message and rememb
 * `c.destroy()` destroy the stream. calls all missing callbacks with an error
 
 * `c.ping(cb)` send a ping. useful to check if the connection is still alive
+
+## Encoding
+
+Mixed mode encoding supports a header object, and a body buffer in the same message. To send a mixed mode message, do `c.send({ header: {}, body: buffer }, [cb])`. Same goes for receiving `c.on('message', message, cb)` - message is an object with `header` and `body` properties.
 
 ## Protocol
 
